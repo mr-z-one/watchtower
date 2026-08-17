@@ -1,0 +1,11 @@
+[
+    {
+        "program_name" :"iranserver",
+        "in_scope":[
+            "hub.iranserver.com"
+        ],
+        "out_scope":[
+            "A.iranserver.com"
+        ]
+    }
+]
