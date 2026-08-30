@@ -1,0 +1,12 @@
+write subfinder to enumareate subdoamin of domain and program
+
+get all of subdomain of all program
+
+get all ip brlong subdoamin 
+        dnsx -l {subs_file} -wd {domain} -rl 30 -t 10  -resp -json  -silent
+
+        track the change IP and updated and don't delete
+
+
+for fresh subs get only subdomain that creation record for last 24H
+for lives subs get only subdomain that Update record [ip] for last 24H

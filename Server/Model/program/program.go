@@ -5,18 +5,19 @@ import (
 	"time"
 	"watchtower/Server/Model/db"
 	custom_color "watchtower/custom_Color"
+	"watchtower/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+var collectionName string = "programs"
 
 type Wt_Program struct {
 	Program_Name string   `json:"program_name" bson:"program_name"`
 	In_Scope     []string `json:"in_scope" bson:"in_scope"`
 	Out_Scope    []string `json:"out_scope" bson:"out_scope"`
 }
-
-var collectionName string = "programs"
 
 func GetProgramByName(name string) (Wt_Program, error) {
 	watchtower_db := db.Mongo_connect()
@@ -32,9 +33,13 @@ func GetAllProgram() ([]Wt_Program, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	cursor, err := watchtower_db.Collection(collectionName).Find(ctx, bson.D{})
-	if err != nil {
+
+	e := utils.FailOnError(err, "", nil)
+	if e {
+
 		return []Wt_Program{}, err
 	}
+
 	var results []Wt_Program
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		panic(err)
@@ -67,11 +72,8 @@ func UpsertProgram(programs []Wt_Program) {
 	}
 	_, err := watchtower_db.Collection(collectionName).BulkWrite(ctx, models)
 
-	if err != nil {
-		custom_color.Error()("\ncan't update program\n")
-		custom_color.Error()("\n%v\n", err)
+	utils.FailOnError(err, "can't update program", nil)
 
-	}
 	//dbconn := db.Mongo_connect()
 
 }

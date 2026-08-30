@@ -1,12 +1,12 @@
 package program
 
 import (
-	"fmt"
+	"watchtower/Server/api/enum/crtsh"
 
 	"github.com/gorilla/mux"
 )
 
 func RegisterEnumerationRoutes(routes *mux.Router) {
 	enum := routes.PathPrefix("/enum").Subrouter()
-	fmt.Println(enum)
+	crtsh.RegisterCrtshApi(enum)
 }

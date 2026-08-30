@@ -8,5 +8,9 @@ import (
 func main() {
 
 	db.Mongo_connect()
+	db.InitializeIndexes()
+	//defer conn.Close()
+	//defer ch.Close()
+
 	server.StartServer(3000)
 }

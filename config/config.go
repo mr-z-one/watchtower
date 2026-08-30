@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"watchtower/Server/Model/program"
+	"watchtower/utils"
 )
 
 func ReadeConfig(name string) []program.Wt_Program {
@@ -19,14 +20,18 @@ func ReadeConfig(name string) []program.Wt_Program {
 	}
 	config, err := os.Open(name)
 
-	if err != nil {
-		fmt.Println("[-]", err)
+	e := utils.FailOnError(err, "", nil)
+	if e {
+
 		return nil
 	}
+
 	defer config.Close()
 	data, err := io.ReadAll(config)
-	if err != nil {
-		fmt.Println("[-]", err)
+
+	e = utils.FailOnError(err, "", nil)
+	if e {
+
 		return nil
 	}
 
@@ -34,8 +39,9 @@ func ReadeConfig(name string) []program.Wt_Program {
 
 	err = json.Unmarshal(data, &userConfig)
 
-	if err != nil {
-		fmt.Println("[-]", err)
+	e = utils.FailOnError(err, "", nil)
+	if e {
+
 		return nil
 	}
 
