@@ -2,8 +2,9 @@ package db
 
 import (
 	"context"
+	"log"
+	"strings"
 	"time"
-	"watchtower/Server/Model/Job"
 	custom_color "watchtower/custom_Color"
 	"watchtower/utils"
 
@@ -39,7 +40,40 @@ func Mongo_connect() *mongo.Database {
 	return current_db
 }
 
+func indexExists(key string) bool {
+	watchtower_db := Mongo_connect()
+	coursor, err := watchtower_db.Collection("Jobs").Indexes().List(context.Background())
+
+	utils.FailOnErrorPanic(err, "cursor can't created", nil)
+
+	defer coursor.Close(context.Background())
+	for coursor.Next(context.Background()) {
+
+		var index bson.M
+		if err := coursor.Decode(&index); err != nil {
+			log.Fatal(err)
+		}
+
+		if name, ok := index["name"].(string); ok {
+
+			s := strings.Split(name, "_")
+
+			if s[0] == key {
+				return true
+			}
+
+		}
+
+	}
+	return false
+}
 func CreateIndex(collectionName string, key string, value int) {
+
+	if indexExists(key) {
+
+		return
+	}
+
 	watchtower_db := Mongo_connect()
 
 	collecton := watchtower_db.Collection(collectionName)
@@ -49,8 +83,5 @@ func CreateIndex(collectionName string, key string, value int) {
 		Keys: bson.D{{Key: key, Value: value}},
 	}
 	collecton.Indexes().CreateOne(ctx, indexModel)
-}
 
-func InitializeIndexes() {
-	Job.InitializeIndexes()
 }

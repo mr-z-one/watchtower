@@ -32,7 +32,7 @@ func CreateChannel(conn *amqp091.Connection) *amqp091.Channel {
 
 	return ch
 }
-func SendMessage(message *Message, callback func(ack bool)) {
+func SendMessage(message *Message, callback func(ack bool, message *Message)) {
 	conn := Connect()
 	if conn == nil {
 		panic("rabbitmq connection Lost")
@@ -48,6 +48,12 @@ func SendMessage(message *Message, callback func(ack bool)) {
 		amqp091.Table{
 			amqp091.QueueTypeArg: amqp091.QueueTypeQuorum,
 		},
+	)
+	utils.FailOnErrorPanic(err, "", nil)
+	err = ch.Qos(
+		1,     // prefetch count
+		0,     // prefetch size
+		false, // global
 	)
 	utils.FailOnErrorPanic(err, "", nil)
 
@@ -74,14 +80,14 @@ func SendMessage(message *Message, callback func(ack bool)) {
 
 	if err != nil {
 		log.Printf("Confirmation wait failed: %v", err)
-		callback(false)
+		callback(false, message)
 		return
 	}
 	if !acked {
 		log.Printf("Message %d was nacked by the broker", confirm.DeliveryTag)
-		callback(false)
+		callback(false, message)
 		return
 	}
-	callback(true)
+	callback(true, message)
 
 }

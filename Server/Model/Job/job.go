@@ -3,10 +3,13 @@ package Job
 import (
 	"context"
 	"time"
+
 	"watchtower/Server/Model/db"
 	custom_color "watchtower/custom_Color"
 	"watchtower/rabbitmq"
 	"watchtower/utils"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var (
@@ -32,10 +35,26 @@ func NewJob(state string, message *rabbitmq.Message) *Job {
 		UUID: message.UUID, CreatedAt: craetedAt, UpdatedAt: craetedAt}
 }
 
-func InitializeIndexes() {
+func CreateIndex() {
 	db.CreateIndex(collectionName, "uuid", 1)
 }
 
+func Update(state string, uuid string) {
+	watchtower_db := db.Mongo_connect()
+
+	collecton := watchtower_db.Collection(collectionName)
+	ctx := context.Background()
+
+	filter := bson.M{"uuid": uuid}
+	update := bson.M{"$set": bson.M{"state": state, "updated_at": time.Now().Unix()}}
+
+	r, err := collecton.UpdateOne(ctx, filter, update)
+
+	utils.FailOnError(err, "can't update Job", nil)
+	if r.MatchedCount != 1 {
+		custom_color.Warning()("jobs with id \"%s\" not Found \n", uuid)
+	}
+}
 func Insert(state string, Message *rabbitmq.Message) {
 
 	job := NewJob(state, Message)
@@ -45,12 +64,12 @@ func Insert(state string, Message *rabbitmq.Message) {
 	collecton := watchtower_db.Collection(collectionName)
 
 	ctx := context.Background()
-	r, err := collecton.InsertOne(ctx, job)
+	_, err := collecton.InsertOne(ctx, job)
 
 	e := utils.FailOnError(err, "can't insert Job", nil)
 
 	if !e {
-		custom_color.Succeed()("job_id : %s has inserted to DB", r.InsertedID)
+		custom_color.Succeed()("job_id : %s has inserted to DB\n", Message.UUID)
 	}
 
 }
