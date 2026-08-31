@@ -21,7 +21,7 @@ func Connect() *amqp091.Connection {
 	}
 	conn, err := amqp091.Dial("amqp://guest:guest@localhost:5672/")
 	utils.FailOnErrorPanic(err, "", nil)
-
+	connection = conn
 	return conn
 }
 
@@ -39,6 +39,37 @@ func SendMessage(message *Message, callback func(ack bool, message *Message)) {
 	}
 	ch := CreateChannel(conn)
 	defer ch.Close()
+	err := ch.ExchangeDeclare(
+		"dlq_exchange", // name
+		"direct",       // type
+		false,          // durability
+		false,          // auto-deleted
+		false,          // internal
+		false,          // no-wait
+		nil,            // arguments
+	)
+
+	utils.FailOnErrorPanic(err, "can't create exchange", nil)
+
+	dlq, err := ch.QueueDeclare(
+		"dlq", // name
+		true,  // durability
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		amqp091.Table{
+			amqp091.QueueTypeArg: amqp091.QueueTypeQuorum,
+		},
+	)
+
+	err = ch.QueueBind(
+		dlq.Name,       // queue name
+		"",             // routing key
+		"dlq_exchange", // exchange
+		false,
+		nil)
+	utils.FailOnErrorPanic(err, "can't bind exchange to dlq", nil)
+
 	q, err := ch.QueueDeclare(
 		"task_queue", // name
 		true,         // durability
@@ -46,7 +77,9 @@ func SendMessage(message *Message, callback func(ack bool, message *Message)) {
 		false,        // exclusive
 		false,        // no-wait
 		amqp091.Table{
-			amqp091.QueueTypeArg: amqp091.QueueTypeQuorum,
+			amqp091.QueueTypeArg:        amqp091.QueueTypeQuorum,
+			"x-dead-letter-exchange":    "dlq_exchange",
+			"x-dead-letter-routing-key": "",
 		},
 	)
 	utils.FailOnErrorPanic(err, "", nil)
