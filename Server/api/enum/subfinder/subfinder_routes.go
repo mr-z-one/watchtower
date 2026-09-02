@@ -9,4 +9,5 @@ import (
 func RegisterSubfinderApi(routes *mux.Router) {
 
 	routes.HandleFunc("/subfinder", handler.SendSubFinderJob).Methods("POST")
+
 }

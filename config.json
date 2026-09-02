@@ -7,5 +7,14 @@
         "out_scope":[
             "A.iranserver.com"
         ]
+    },
+     {
+        "program_name" :"iranserver3",
+        "in_scope":[
+            "hub.iranserver.com"
+        ],
+        "out_scope":[
+            "A.iranserver.com"
+        ]
     }
 ]

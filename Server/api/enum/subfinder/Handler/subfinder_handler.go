@@ -2,27 +2,41 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"watchtower/Server/Message"
 	"watchtower/Server/Model/Job"
 	"watchtower/Server/validator"
 	custom_color "watchtower/custom_Color"
 	"watchtower/rabbitmq"
+	"watchtower/utils"
 )
 
 func SendSubFinderJob(w http.ResponseWriter, r *http.Request) {
+	resp := map[string]any{}
+	b, _ := io.ReadAll(r.Body)
+	err := json.Unmarshal(b, &resp)
 
-	r.ParseForm()
-	domain := r.PostForm["domain"]
-
-	if len(domain) == 0 || !validator.IsUrl().MatchString(domain[0]) {
-		err := Message.CreateErrorMessage("domain is required", 400)
-		d, _ := json.Marshal(err)
-		w.Write([]byte(d))
+	if utils.FailOnError(err, "", nil) {
+		w.Write(Message.CreateErrorMessageJson("json is invalid", 400))
 		return
 	}
 
-	r_message := rabbitmq.NewMessage(rabbitmq.SUBFINDER, domain[0])
+	domain, err := utils.GetStringMap(resp, "domain")
+	if err != nil {
+
+		w.Write(Message.CreateErrorMessageJson("domain is required", 400))
+		return
+
+	}
+
+	if domain == "" || !validator.IsUrl().MatchString(domain) {
+
+		w.Write(Message.CreateErrorMessageJson("domain is not valid", 400))
+		return
+	}
+
+	r_message := rabbitmq.NewMessage(rabbitmq.CMD_SUBFINDER, rabbitmq.TYPE_SUBDOMAIN, domain)
 
 	go rabbitmq.SendMessage(r_message, func(ack bool, message *rabbitmq.Message) {
 		if !ack {
@@ -31,6 +45,6 @@ func SendSubFinderJob(w http.ResponseWriter, r *http.Request) {
 	})
 	Job.Insert(Job.PENDING, r_message)
 
-	w.Write([]byte("the job schedule for execution.."))
+	w.Write([]byte(Message.CreateMessageJson("the job schedule for execution...", 200)))
 
 }

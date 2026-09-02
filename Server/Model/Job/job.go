@@ -24,6 +24,7 @@ type Job struct {
 	State     string            `bson:"state"`
 	Message   *rabbitmq.Message `bson:"message"`
 	UUID      string            `bson:"uuid,omitempty"`
+	Type      string            `json:"type" bson:"type"`
 	CreatedAt int64             `bson:"created_at"`
 	UpdatedAt int64             `bson:"updated_at"`
 }
@@ -32,7 +33,7 @@ func NewJob(state string, message *rabbitmq.Message) *Job {
 	craetedAt := time.Now().Unix()
 
 	return &Job{State: state, Message: message,
-		UUID: message.UUID, CreatedAt: craetedAt, UpdatedAt: craetedAt}
+		UUID: message.UUID, Type: message.Type, CreatedAt: craetedAt, UpdatedAt: craetedAt}
 }
 
 func CreateIndex() {

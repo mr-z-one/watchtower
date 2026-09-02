@@ -8,5 +8,6 @@ import (
 
 func RegisterProgramApi(routes *mux.Router) {
 	routes.HandleFunc("/program/all", handler.GetAllProgram)
-	routes.HandleFunc("/program/{name}/", handler.GetProgramByName)
+	routes.HandleFunc("/program/name/{name}/", handler.GetProgramByName)
+	routes.HandleFunc("/program/id/{id}/", handler.GetProgramByID)
 }

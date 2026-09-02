@@ -10,7 +10,7 @@ import (
 	"watchtower/utils"
 )
 
-func ReadeConfig(name string) []program.Wt_Program {
+func ReadeConfig(name string) []*program.Wt_Program {
 
 	r := regexp.MustCompile(`[^.]+\.json$`)
 
@@ -35,7 +35,7 @@ func ReadeConfig(name string) []program.Wt_Program {
 		return nil
 	}
 
-	var userConfig []program.Wt_Program
+	var userConfig []*program.Wt_Program
 
 	err = json.Unmarshal(data, &userConfig)
 

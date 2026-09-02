@@ -1,4 +1,4 @@
-package program
+package enum
 
 import (
 	"watchtower/Server/api/enum/crtsh"
