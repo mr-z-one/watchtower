@@ -2,19 +2,23 @@
     {
         "program_name" :"iranserver",
         "in_scope":[
-            "hub.iranserver.com"
+            "hub.iranserver.com",
+            "*.example.com"
         ],
         "out_scope":[
             "A.iranserver.com"
         ]
     },
-     {
-        "program_name" :"iranserver3",
+        {
+        "program_name" :"DIGIKALA",
         "in_scope":[
-            "hub.iranserver.com"
+            "store.DIGIKALA.com",
+            "*.example.cr"
         ],
         "out_scope":[
             "A.iranserver.com"
         ]
     }
+
+
 ]

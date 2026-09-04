@@ -59,7 +59,7 @@ func GetAllProgram() ([]*Wt_Program, error) {
 	return results, nil
 }
 
-func UpsertProgram(programs []*Wt_Program) {
+func UpsertPrograms(programs []*Wt_Program) {
 
 	watchtower_db := db.Mongo_connect()
 	models := make([]mongo.WriteModel, 0, len(programs))
@@ -69,7 +69,7 @@ func UpsertProgram(programs []*Wt_Program) {
 
 	for _, myprogram := range programs {
 
-		program_copy := utils.StructToMap(myprogram, "ID")
+		program_copy := utils.StructToMapWithTags(myprogram, "ID")
 		model := mongo.NewUpdateOneModel().SetFilter(bson.M{
 			"program_name": myprogram.Program_Name,
 		}).SetUpdate(bson.M{

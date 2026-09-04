@@ -7,15 +7,32 @@ services:
     restart: unless-stopped
     ports:
       - "27017:27017"
- 
     volumes:
       - mongodb_data:/data/db
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - mongodb_network
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"      # AMQP protocol port
+      - "15672:15672"    # Management UI port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      # You can change these credentials for production
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - mongodb_network
+
 volumes:
   mongodb_data:
+    driver: local
+  rabbitmq_data:
     driver: local
 
 networks:
